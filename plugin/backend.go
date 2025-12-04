@@ -64,6 +64,10 @@ func Backend() *minioBackend {
         //path_service_account.go
         //^config upgrade-service-account
         b.pathServiceAccount(),
+
+        //path_rotate_root.go
+        //
+        b.pathConfigRotateRoot(),
     },
     }
 
