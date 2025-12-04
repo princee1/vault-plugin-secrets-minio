@@ -60,6 +60,10 @@ func Backend() *minioBackend {
         // ^creds/<role>
         // ^sts/<role>
         b.pathKeysRead(),
+
+        //path_service_account.go
+        //^config upgrade-service-account
+        b.pathServiceAccount(),
     },
     }
 

@@ -18,16 +18,10 @@ type Config struct {
     SecretAccessKey string `json:"secretAccessKey"`
     UseSSL bool `json:"useSSL"`
     Configured bool `json:"is_configured"`
+    IsServiceAccount bool `json:"isServiceAccount"`
 }
 
-// Define the CRU functions for the config path
-func (b *minioBackend) pathConfigCRUD() *framework.Path {
-    return &framework.Path{
-    Pattern: configStoragePath,
-    HelpSynopsis: "Configure the Minio connection.",
-    HelpDescription: "Use this endpoint to set the Minio endpoint, accessKeyId, secretAccessKey and SSL settings.",
-
-    Fields: map[string]*framework.FieldSchema{
+var configSchema map[string]*framework.FieldSchema =  map[string]*framework.FieldSchema{
         "endpoint": &framework.FieldSchema{
         Type: framework.TypeString,
         Description: "The Minio server endpoint.",
@@ -44,7 +38,16 @@ func (b *minioBackend) pathConfigCRUD() *framework.Path {
         Type: framework.TypeBool,
         Description: "(Optional, default `false`) Use SSL to connect to the Minio server.",
         },
-    },
+    }
+
+// Define the CRU functions for the config path
+func (b *minioBackend) pathConfigCRUD() *framework.Path {
+    return &framework.Path{
+    Pattern: configStoragePath,
+    HelpSynopsis: "Configure the Minio connection.",
+    HelpDescription: "Use this endpoint to set the Minio endpoint, accessKeyId, secretAccessKey and SSL settings.",
+
+    Fields:configSchema,
 
     Operations: map[logical.Operation]framework.OperationHandler{
         logical.ReadOperation: &framework.PathOperation{
@@ -73,6 +76,8 @@ func (b *minioBackend) pathConfigRead(ctx context.Context, req *logical.Request,
         "accessKeyId": c.AccessKeyId,
         "secretAccessKey": c.SecretAccessKey,
         "useSSL": c.UseSSL,
+        "isConfigured": c.Configured,
+        "isServiceAccount":c.IsServiceAccount,
     },
     }, nil
 }
@@ -83,9 +88,9 @@ func (b *minioBackend) pathConfigUpdate(ctx context.Context, req *logical.Reques
     if err != nil {
         return nil, err
     }
-
+    
     // Update the internal configuration
-    changed, err := c.Update(d)
+    changed, err := c.Update(d,req)
     if err != nil {
         return nil, err
     }
@@ -123,7 +128,7 @@ func (b *minioBackend) pathConfigDelete(ctx context.Context, req *logical.Reques
     return nil, fmt.Errorf("failed to delete configuration: %v", err)
 }
 
-func (c *Config) Update(d *framework.FieldData) (bool, error) {
+func (c *Config) Update(d *framework.FieldData,req *logical.Request) (bool, error) {
     if d == nil {
         return false, logical.CodedError(400, "Bad Request Error")
     }
@@ -152,6 +157,12 @@ func (c *Config) Update(d *framework.FieldData) (bool, error) {
         }
     }
     }
+
+    if strings.HasSuffix(req.Path,"service-account") && req.Operation == logical.CreateOperation{
+        c.IsServiceAccount = true
+    }else if  changed && strings.HasSuffix(req.Path,"root"){
+        c.IsServiceAccount = false
+    }   
 
     if v, ok := d.GetOk("useSSL"); ok {
     nv := v.(bool)
@@ -189,5 +200,6 @@ func DefaultConfig() *Config {
     SecretAccessKey: "",
     UseSSL: false,
     Configured: false,
+    IsServiceAccount: false,
     }
 }
