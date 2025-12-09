@@ -62,11 +62,11 @@ func Backend() *minioBackend {
         b.pathKeysRead(),
 
         //path_service_account.go
-        //^config upgrade-service-account
+        //^config/service-account
         b.pathServiceAccount(),
 
         //path_rotate_root.go
-        //
+        //^config/rotate-root 
         b.pathConfigRotateRoot(),
     },
     }

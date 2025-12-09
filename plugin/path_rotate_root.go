@@ -13,7 +13,7 @@ import (
 func (b *minioBackend) pathConfigRotateRoot() *framework.Path {
 
 	return &framework.Path{
-		Pattern: "config/rotate-root/",
+		Pattern: "config/rotate-root",
 
 		HelpSynopsis: `
 Rotate the secret key for the MinIO service account used by this secrets engine.

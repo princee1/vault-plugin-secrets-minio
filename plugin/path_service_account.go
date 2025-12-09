@@ -15,7 +15,7 @@ const NAME string = "vaultadmin:minio:service-account"
 func (b *minioBackend) pathServiceAccount() *framework.Path {
 
 	return &framework.Path{
-		Pattern: "config/service-account/",
+		Pattern: "config/service-account",
 
 		HelpSynopsis: `
 Upgrade the MinIO configuration to use a dedicated service account instead of a root account.
